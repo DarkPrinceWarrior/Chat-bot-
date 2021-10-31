@@ -1,16 +1,15 @@
 import random
+import aiogram
 
 import telebot
 import config
 from telebot import types
 
 # You can set parse_mode by default. HTML or MARKDOWN
-bot = telebot.TeleBot(config.TOKEN, parse_mode=None)
-
-filters = ['start', 'hello', 'hi', "whatsup"]
+bot = telebot.TeleBot(config.TOKEN)
 
 
-@bot.message_handler(filters)
+@bot.message_handler('start')
 def send_welcome(message):
     greetng_sticker = open("static/sticker.webp", "rb")
     bot.send_sticker(message.chat.id, greetng_sticker)
