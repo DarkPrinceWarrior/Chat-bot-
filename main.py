@@ -1,6 +1,5 @@
 import random
-import aiogram
-
+from db_query import Mysql_queries
 import telebot
 import config
 from telebot import types
@@ -18,8 +17,9 @@ def send_welcome(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton("🎲 Рандомное число")
     item2 = types.KeyboardButton("😀 Как дела?")
+    item3 = types.KeyboardButton("🎵 Твои песни")
 
-    markup.add(item1, item2)
+    markup.add(item1, item2, item3)
 
     bot.send_message(message.chat.id, f"Hello {message.from_user.first_name} my name is "
                                       f"'{bot.get_me().first_name}' bot ",
@@ -38,8 +38,16 @@ def echo_all(message):
             item1 = types.InlineKeyboardButton("Хорошо!", callback_data='good')
             item2 = types.InlineKeyboardButton("Так себе", callback_data='bad')
             markup.add(item1, item2)
-
             bot.send_message(message.chat.id, 'У бота все хорошо, а у тебя?', reply_markup=markup)
+
+        # music button and sql select from DB
+        elif message.text == '🎵 Твои песни':
+            records = Mysql_queries().select_all()
+            string = ""
+            for row in records:
+                string += str(row['song_name'])+"\n"
+            bot.send_message(message.chat.id, string)
+
         else:
             bot.send_message(message.chat.id, 'Сложный запрос((')
 
