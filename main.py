@@ -24,14 +24,23 @@ logging.basicConfig(level=logging.INFO)
 
 @dp.message_handler(commands="start")
 async def start_bot(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup()
+     # для скрытия кнопок после нажатия  one_time_keyboard
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
     # one way to create button with text
     button_1 = types.KeyboardButton(text="Ничего")
-    keyboard.add(button_1)
-    # create button like variable string
     button_2 = "Прыгать"
-    keyboard.add(button_2)
+    keyboard.add(button_1,button_2)
+    # create button like variable string
     await message.answer("Что делать?", reply_markup=keyboard)
+
+@dp.message_handler(commands="special_buttons")
+async def cmd_special_buttons(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton(text="Запросить геолокацию", request_location=True))
+    keyboard.add(types.KeyboardButton(text="Запросить контакт", request_contact=True))
+    keyboard.add(types.KeyboardButton(text="Создать викторину",
+                                      request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
+    await message.answer("Выберите действие:", reply_markup=keyboard)
 
 
 # # type /block to block the user
@@ -54,9 +63,10 @@ async def start_bot(message: types.Message):
 
 
 async def any_input_handler(message: types.Message):
-    if message.md_text == "Ничего":
+    if message.text == "Ничего":
+        #reply_markup=types.ReplyKeyboardRemove()
         await message.answer("Окей")
-    elif message.md_text == "Прыгать":
+    elif message.text == "Прыгать":
         await message.answer("Давай начнем")
     else:
         mes = "Ты чет-то там написал"
