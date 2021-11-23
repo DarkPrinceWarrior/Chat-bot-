@@ -1,2 +1,2 @@
 # Chat-bot-
-Telegram chat bot on python using pyTelegramBotAPI
+Telegram chat bot on python using aiogram library
