@@ -11,4 +11,5 @@ INSERT into  Music(song_name) values('Nickelback - When we stand together');
 INSERT into  Music(song_name) values('The Weekend - starboy');
 INSERT into  Music(song_name) values('Linkin Park - Numb');
 INSERT into  Music(song_name) values('Arash - Boro boro');
+INSERT into  Music(song_name) values('Faydee - Love in Dubai');
 
