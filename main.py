@@ -1,15 +1,19 @@
 import logging
+import os
+
+from AI.lunch import Model
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+from AI import lunch
+from AI import nltk_utils
 import random
-import aiogram.utils.markdown as fmt
-from aiogram.types import ParseMode, InlineKeyboardMarkup
-from aiogram.utils import executor, callback_data
-from db_query import Mysql_queries
 import config
+import aiogram.utils.markdown as fmt
+import numpy as np
+from keras.utils.np_utils import to_categorical
+from aiogram.types import ParseMode
 from telebot import types
-import asyncio
-from aiogram import Bot, Dispatcher
 from aiogram import *
-from aiogram.utils.exceptions import BotBlocked
 
 # You can set parse_mode by default. HTML or MARKDOWN
 bot = Bot(config.TOKEN, parse_mode=ParseMode.HTML)
@@ -19,6 +23,9 @@ dp = Dispatcher(bot)
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 
+# create and fit the model
+model = Model()
+model.prepare_train_labels()
 
 @dp.message_handler(commands="start")
 async def start_bot(message: types.Message):
@@ -73,11 +80,23 @@ async def any_input_handler(message: types.Message):
     elif message.text == "Прыгать":
         await message.answer("Давай начнем")
     else:
+        model1 = model.getModel()
+        sentence = nltk_utils.tokenize(message.text)
+        sentence = nltk_utils.bag_of_words(sentence, model.all_words)
+        sentence = np.array(sentence)
+        sentence = sentence.reshape(1, sentence.shape[0])
+
+        prediction = model1.predict(sentence)
+        tag_index = np.argmax(prediction)
+        tag = model.tags[tag_index]
+        bot_answer = model.getResponse(tag)
+
+
         mes = "Ты чет-то там написал"
         await message.answer(
             fmt.text(
                 fmt.hunderline(mes),
-                fmt.text(fmt.hbold("ИСПРАВЬ!")),
+                fmt.text(fmt.hbold(bot_answer," :",tag)),
                 sep="\n"
 
             ))
@@ -116,4 +135,5 @@ async def download_doc(message: types.Message):
 dp.register_message_handler(any_input_handler)
 
 if __name__ == "__main__":
+
     executor.start_polling(dp, skip_updates=True)
