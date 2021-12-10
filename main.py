@@ -1,8 +1,8 @@
 import logging
 import random
 import aiogram.utils.markdown as fmt
-from aiogram.types import ParseMode
-from aiogram.utils import executor
+from aiogram.types import ParseMode, InlineKeyboardMarkup
+from aiogram.utils import executor, callback_data
 from db_query import Mysql_queries
 import config
 from telebot import types
@@ -20,18 +20,17 @@ dp = Dispatcher(bot)
 logging.basicConfig(level=logging.INFO)
 
 
-
-
 @dp.message_handler(commands="start")
 async def start_bot(message: types.Message):
-     # для скрытия кнопок после нажатия  one_time_keyboard
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
+    # для скрытия кнопок после нажатия  one_time_keyboard
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     # one way to create button with text
     button_1 = types.KeyboardButton(text="Ничего")
     button_2 = "Прыгать"
-    keyboard.add(button_1,button_2)
+    keyboard.add(button_1, button_2)
     # create button like variable string
     await message.answer("Что делать?", reply_markup=keyboard)
+
 
 @dp.message_handler(commands="special_buttons")
 async def cmd_special_buttons(message: types.Message):
@@ -61,11 +60,16 @@ async def cmd_special_buttons(message: types.Message):
 #     # если дальнейшая обработка не требуется.
 #     return True
 
-
 async def any_input_handler(message: types.Message):
     if message.text == "Ничего":
-        #reply_markup=types.ReplyKeyboardRemove()
-        await message.answer("Окей")
+        # reply_markup=types.ReplyKeyboardRemove() удалить клаву
+        buttons = [
+            types.InlineKeyboardButton(text="ДА", callback_data="Да"),
+            types.InlineKeyboardButton(text="НЕТ", callback_data="Нет")
+        ]
+        inline_keyboard = types.InlineKeyboardMarkup()
+        inline_keyboard.add(*buttons)
+        await message.answer("Точно?", reply_markup=inline_keyboard)
     elif message.text == "Прыгать":
         await message.answer("Давай начнем")
     else:
@@ -78,6 +82,16 @@ async def any_input_handler(message: types.Message):
 
             ))
 
+
+@dp.callback_query_handler()
+async def send_random_value(call: types.CallbackQuery):
+    if call.data == "Да":
+        await call.answer(text="Ну и сиди себе!", show_alert=True)
+        # или просто await call.answer()
+    else:
+        await call.answer(text="Отлично, я знал, что ты не такой, как все", show_alert=False)
+        # await call.message.answer("Отлично, я знал, что ты не такой, как все")
+        # after that Telegram waits for us for 30 sec(wait for callback) and then close the watch icon
 
 
 # indeed there is fun "answer_dice" in Message
@@ -95,7 +109,6 @@ async def echo_document(message: types.Message):
 async def download_doc(message: types.Message):
     # Скачивание в каталог с ботом с созданием подкаталогов по типу файла
     await message.document.download()
-
 
 
 # alternative version of specifying the handler
