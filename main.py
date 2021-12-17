@@ -2,6 +2,8 @@ import logging
 import os
 
 from AI.lunch import Model
+from DB_Models.Roles import Roles
+from admin import admin_actions, any_input_handler
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from AI import lunch
@@ -24,19 +26,13 @@ dp = Dispatcher(bot)
 logging.basicConfig(level=logging.INFO)
 
 # create and fit the model
-model = Model()
-model.prepare_train_labels()
+# model = Model()
+# model.prepare_train_labels()
 
 @dp.message_handler(commands="start")
 async def start_bot(message: types.Message):
-    # для скрытия кнопок после нажатия  one_time_keyboard
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    # one way to create button with text
-    button_1 = types.KeyboardButton(text="Ничего")
-    button_2 = "Прыгать"
-    keyboard.add(button_1, button_2)
-    # create button like variable string
-    await message.answer("Что делать?", reply_markup=keyboard)
+
+    await message.answer("Hello, it's start!")
 
 
 @dp.message_handler(commands="special_buttons")
@@ -49,57 +45,40 @@ async def cmd_special_buttons(message: types.Message):
     await message.answer("Выберите действие:", reply_markup=keyboard)
 
 
-# # type /block to block the user
-# @dp.message_handler(commands="block")
-# async def cmd_block(message: types.Message):
-#     await asyncio.sleep(10.0)  # Здоровый сон на 10 секунд
-#     await message.reply("Вы заблокированы")
+
+# async def any_input_handler(message: types.Message):
+#     if message.text == "Ничего":
+#         # reply_markup=types.ReplyKeyboardRemove() удалить клаву
+#         buttons = [
+#             types.InlineKeyboardButton(text="ДА", callback_data="Да"),
+#             types.InlineKeyboardButton(text="НЕТ", callback_data="Нет")
+#         ]
+#         inline_keyboard = types.InlineKeyboardMarkup()
+#         inline_keyboard.add(*buttons)
+#         await message.answer("Точно?", reply_markup=inline_keyboard)
+#     elif message.text == "Прыгать":
+#         await message.answer("Давай начнем")
+#     else:
+#         model1 = model.getModel()
+#         sentence = nltk_utils.tokenize(message.text)
+#         sentence = nltk_utils.bag_of_words(sentence, model.all_words)
+#         sentence = np.array(sentence)
+#         sentence = sentence.reshape(1, sentence.shape[0])
+#
+#         prediction = model1.predict(sentence)
+#         tag_index = np.argmax(prediction)
+#         tag = model.tags[tag_index]
+#         bot_answer = model.getResponse(tag)
 #
 #
-# # handle the exception if user blocked the bot before
-# @dp.errors_handler(exception=BotBlocked)
-# async def error_bot_blocked(update: types.Update, exception: BotBlocked):
-#     # Update: объект события от Telegram. Exception: объект исключения
-#     # Здесь можно как-то обработать блокировку, например, удалить пользователя из БД
-#     print(f"Меня заблокировал пользователь!\nСообщение: {update}\nОшибка: {exception}")
+#         mes = "Ты чет-то там написал"
+#         await message.answer(
+#             fmt.text(
+#                 fmt.hunderline(mes),
+#                 fmt.text(fmt.hbold(bot_answer," :",tag)),
+#                 sep="\n"
 #
-#     # Такой хэндлер должен всегда возвращать True,
-#     # если дальнейшая обработка не требуется.
-#     return True
-
-async def any_input_handler(message: types.Message):
-    if message.text == "Ничего":
-        # reply_markup=types.ReplyKeyboardRemove() удалить клаву
-        buttons = [
-            types.InlineKeyboardButton(text="ДА", callback_data="Да"),
-            types.InlineKeyboardButton(text="НЕТ", callback_data="Нет")
-        ]
-        inline_keyboard = types.InlineKeyboardMarkup()
-        inline_keyboard.add(*buttons)
-        await message.answer("Точно?", reply_markup=inline_keyboard)
-    elif message.text == "Прыгать":
-        await message.answer("Давай начнем")
-    else:
-        model1 = model.getModel()
-        sentence = nltk_utils.tokenize(message.text)
-        sentence = nltk_utils.bag_of_words(sentence, model.all_words)
-        sentence = np.array(sentence)
-        sentence = sentence.reshape(1, sentence.shape[0])
-
-        prediction = model1.predict(sentence)
-        tag_index = np.argmax(prediction)
-        tag = model.tags[tag_index]
-        bot_answer = model.getResponse(tag)
-
-
-        mes = "Ты чет-то там написал"
-        await message.answer(
-            fmt.text(
-                fmt.hunderline(mes),
-                fmt.text(fmt.hbold(bot_answer," :",tag)),
-                sep="\n"
-
-            ))
+#             ))
 
 
 @dp.callback_query_handler()
@@ -130,10 +109,9 @@ async def download_doc(message: types.Message):
     await message.document.download()
 
 
-# alternative version of specifying the handler
-# can use it without (lambda x: True)
+
+dp.register_message_handler(admin_actions, commands="admin")
 dp.register_message_handler(any_input_handler)
 
 if __name__ == "__main__":
-
     executor.start_polling(dp, skip_updates=True)
